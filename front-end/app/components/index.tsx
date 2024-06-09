@@ -15,12 +15,12 @@ interface UploadcareGetFilesResponse {
 export default function Index() {
   const UPLOADCARE_PUBLIC_KEY = '';
   const UPLOADCARE_SECRET_KEY = '';
-  const pageLimit = 25;
+  const pageLimit = 3;
   const initialFetchUrl = `https://api.uploadcare.com/files/?limit=${pageLimit}&ordering=-datetime_uploaded`;
   const [images, setImages] = useState<Photo[]>([]);
   const [nextFetchUrl, setNextFetchUrl] = useState<string | undefined | null>(undefined);
   const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(false);
 
   const fetchImages = async (url: string): Promise<UploadcareGetFilesResponse> => {
     setLoading(true);
@@ -46,34 +46,49 @@ export default function Index() {
     return data as UploadcareGetFilesResponse;
   };
 
-  const loadInitalImages = useCallback(async () => {
-    try {
-      const { next, results } = await fetchImages(initialFetchUrl);
-
-      if (results.length) {
-        setImages(
-          (prevImages) => [
-            ...prevImages,
-            ...results.map(
-              (file) => ({
-                src: file.original_file_url,
-                width: 800,
-                height: 600
-              })
-            )
-          ]
-        );
-      }
-
-      setNextFetchUrl(next);
-    } catch (error) {
-      console.log(`Error encountered while fetching images`, { error });
-    }
-  }, []);
-
   useEffect(() => {
+    let isCancelled = false;
+
+    const loadInitalImages = async () => {
+      if (!isCancelled) {
+        try {
+          const { next, results } = await fetchImages(initialFetchUrl);
+    
+          if (results.length) {
+            setImages(
+              (prevImages) => [
+                ...prevImages,
+                ...results
+                // ugly workaround for useEffect getting called twice on mount when strict mode is enabled
+                .filter(
+                  (image) => 
+                    !prevImages.some(prev => prev.src === image.original_file_url)
+                )
+                .map(
+                  (file) => ({
+                    src: file.original_file_url,
+                    width: 800,
+                    height: 600
+                  })
+                )
+              ]
+            );
+          }
+    
+          setNextFetchUrl(next);
+        } catch (error) {
+          console.log(`Error encountered while fetching images`, { error });
+        }
+      }
+      
+    };
+
     loadInitalImages();
-  }, [loadInitalImages]);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
 
   const loadImages = async () => {
     if (hasMore) {

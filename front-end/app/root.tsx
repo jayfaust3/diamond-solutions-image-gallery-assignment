@@ -2,7 +2,6 @@
 import {
   // Form,
   Links,
-  LiveReload,
   Meta,
   // Outlet,
   Scripts,
@@ -38,7 +37,6 @@ export default function Root() {
         <footer>
           <p>© Diamond Solutions</p>
         </footer>
-        <LiveReload />
         <ScrollRestoration />
         <Scripts />
       </body>
