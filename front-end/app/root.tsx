@@ -7,11 +7,12 @@ import {
   Scripts,
   ScrollRestoration,
 } from '@remix-run/react';
-// import appStylesHref from './styling/app.css';
-import Index from './components';
+// eslint-disable-next-line import/no-unresolved
+// import globalStylesUrl from './styles/global.css';
+import ViewImages from './components/view-images';
 
 // export const links: LinksFunction = () => [
-//   { rel: 'stylesheet', href: appStylesHref },
+//   { rel: 'stylesheet', href: globalStylesUrl },
 // ];
 
 export default function Root() {
@@ -32,7 +33,7 @@ export default function Root() {
         </header>
         <main>
           {/* <Outlet /> */}
-          <Index />
+          <ViewImages />
         </main>
         <footer>
           <p>© Diamond Solutions</p>
