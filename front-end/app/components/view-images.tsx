@@ -1,121 +1,89 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Dropzone, ExtFile } from '@dropzone-ui/react';
 import PhotoAlbum, { ClickHandlerProps, Photo } from 'react-photo-album';
+import { fetchImages as fetchImagesFromApi } from '../utils';
+import { ImageMetadata } from '../models';
 
-interface UploadcareFileMetadata {
-  uuid: string
-  datetime_uploaded: string
-  original_file_url: string
-}
-
-interface UploadcareGetFilesResponse {
-  next?: string | null
-  results: UploadcareFileMetadata[]
+interface IdentifyablePhoto extends Photo { 
+  id: string
 }
 
 export default function ViewImages() {
-  const UPLOADCARE_PUBLIC_KEY = '';
-  const UPLOADCARE_SECRET_KEY = '';
+  const imageWidth = 800;
+  const imageHeight = 600;
   const pageLimit = 3;
-  const initialFetchUrl = `https://api.uploadcare.com/files/?limit=${pageLimit}&ordering=-datetime_uploaded`;
-  const [images, setImages] = useState<Array<Photo & { id: string }>>([]);
-  const [nextFetchUrl, setNextFetchUrl] = useState<string | undefined | null>(undefined);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [images, setImages] = useState<IdentifyablePhoto[]>([]);
   const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
+  const [hasNext, setHasNext] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<ExtFile[]>([]);
 
-  const fetchImages = async (url: string): Promise<UploadcareGetFilesResponse> => {
-    setLoading(true);
+  const mapFileApiModelToFileViewmodel = (apiModel: ImageMetadata): IdentifyablePhoto => {
+    const { imageId: id, imageContentUrl: src } = apiModel;
 
-    console.log('Making fetch request', { url });
-
-    // replace with service call
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Uploadcare.Simple ${UPLOADCARE_PUBLIC_KEY}:${UPLOADCARE_SECRET_KEY}`,
-        'Accept': 'application/vnd.uploadcare-v0.5+json'
-      }
-    });
-
-    if (response.status !== 200) {
-      setLoading(false);
-      throw new Error('Error encountered while fetching images');
-    }
-    
-    const data = await response.json();
-
-    setLoading(false);
-    
-    return data as UploadcareGetFilesResponse;
+    return {
+      id,
+      src,
+      width: imageWidth,
+      height: imageHeight
+    };
   };
+
+  const fetchImages = useCallback(async (page: number): Promise<IdentifyablePhoto[]> => {
+    let fetchedImages: IdentifyablePhoto[] = [];
+
+    try {
+      const imagesFromApi: ImageMetadata[] = await fetchImagesFromApi(pageLimit, page);
+
+      fetchedImages = imagesFromApi.map(mapFileApiModelToFileViewmodel);
+    } catch (error) {
+      console.log('Encountered an error while fetching images', { error });
+    } 
+    
+    return fetchedImages;
+  }, []);
 
   useEffect(() => {
     const loadInitalImages = async () => {
-      try {
-        const { next, results } = await fetchImages(initialFetchUrl);
-  
-        if (results.length) {
-          setImages(
-            (prevImages) => [
-              ...prevImages,
-              ...results
-              // ugly workaround for useEffect getting called twice on mount when strict mode is enabled
-              .filter(
-                (image) => 
-                  !prevImages.some(prev => prev.src === image.original_file_url)
-              )
-              .map(
-                (file) => ({
-                  id: file.uuid,
-                  src: file.original_file_url,
-                  width: 800,
-                  height: 600
-                })
-              )
-            ]
-          );
-        }
-  
-        setNextFetchUrl(next);
-      } catch (error) {
-        console.log(`Error encountered while fetching images`, { error });
-      }
+      setLoading(true);
+
+      const initalImages: IdentifyablePhoto[] = await fetchImages(1);
+
+      setImages(
+        // annoying workaround for the page loading twice locally when strict mode is enabled
+        initalImages.filter(
+          (newImage) => 
+            !images.some(
+              existingImage =>
+                existingImage.id === newImage.id
+            )
+        )
+      );
+        
+      setLoading(false);
     };
 
     loadInitalImages();
   }, []);
 
-  const loadImages = async () => {
-    if (hasMore) {
-      try {
-        const { next, results } = await fetchImages(nextFetchUrl!);
+  const loadImages = useCallback(async (page: number) => {
+    setLoading(true);
 
-        if (results.length) {
-          setImages(
-            (prevImages) => [
-              ...prevImages,
-              ...results.map(
-                (file) => ({
-                  id: file.uuid,
-                  src: file.original_file_url,
-                  width: 800,
-                  height: 600
-                })
-              )
-            ]
-          );
-        }
+    const newImages: IdentifyablePhoto[] = await fetchImages(page);
 
-        setNextFetchUrl(next);
-      } catch (error) {
-        console.log(`Error encountered while fetching images`, { error });
-      }
-    }
-  };
+    setImages(newImages);
+        
+    setLoading(false);
+  }, [setLoading, setImages, fetchImages]);
 
   useEffect(() => {
-    setHasMore(Boolean(nextFetchUrl));
-  }, [nextFetchUrl]);
+    setHasNext(images.length === pageLimit);
+  }, [images]);
+
+  useEffect(() => {
+    setHasPrevious(pageNumber > 1);
+  }, [pageNumber]);
 
   useEffect(() => {
     if (uploadedFiles.length) {
@@ -123,12 +91,7 @@ export default function ViewImages() {
       //POST file to API
       setImages(
         (prevImages) => [
-          // {
-          //   id,
-          //   src: fileUrl,
-          //   width: 800,
-          //   height: 600
-          // },
+          // newImage,
           ...prevImages
         ]
       );
@@ -144,9 +107,28 @@ export default function ViewImages() {
     setUploadedFiles([uploadedFile]);
   }, []);
 
-  const handleImageClicked = useCallback(async ({ photo }: ClickHandlerProps<Photo & { id: string }>) => {
+  const handleImageClicked = useCallback(async ({ photo }: ClickHandlerProps<IdentifyablePhoto>) => {
+    setLoading(true);
     console.log('image clicked', { photo });
+    setLoading(false);
   }, []);
+
+  const handlePreviousClicked = useCallback(async () => {
+    if (hasPrevious) {
+      const newPageNumber = pageNumber - 1;
+      await loadImages(newPageNumber);
+      setPageNumber(newPageNumber);
+    }
+    
+  }, [hasPrevious, pageNumber, loadImages]);
+
+  const handleNextClicked = useCallback(async () => {
+    if (hasNext) {
+      const newPageNumber = pageNumber + 1;
+      await loadImages(newPageNumber);
+      setPageNumber(newPageNumber);
+    }
+  }, [hasNext, pageNumber, loadImages]);
 
   return (
     <div>
@@ -162,8 +144,11 @@ export default function ViewImages() {
         <PhotoAlbum layout="rows" photos={images} onClick={handleImageClicked}/>
       </div>
         {loading && <p>Loading...</p>}
-        {hasMore && !loading && (
-          <button onClick={loadImages}>Load More</button>
+        {hasPrevious && !loading && (
+          <button onClick={handlePreviousClicked}>Previous</button>
+        )}
+        {hasNext && !loading && (
+          <button onClick={handleNextClicked}>Next</button>
         )}
     </div>
   );
