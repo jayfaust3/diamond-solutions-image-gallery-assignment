@@ -17,8 +17,8 @@ interface UploadcareGetFilesResponse {
 const UPLOADCARE_PUBLIC_KEY = '';
 const UPLOADCARE_SECRET_KEY = '';
 const PAGE_LIMIT = 3;
-const UPLOAD_CARE_FILE_API_BASE_URL = 'https://api.uploadcare.com/files/';
-const DEFAULT_FETCH_URL = `${UPLOAD_CARE_FILE_API_BASE_URL}/?ordering=-datetime_uploaded&limit=${PAGE_LIMIT}`;
+const FILE_API_BASE_URL = '/image-api';
+const DEFAULT_FETCH_URL = `${FILE_API_BASE_URL}/?ordering=-datetime_uploaded&limit=${PAGE_LIMIT}`;
 
 export const fetchImages = async (fetchUrl = DEFAULT_FETCH_URL): Promise<GetImagesResponse> => {
     const httpClinet = new HTTPClient();
@@ -38,6 +38,7 @@ export const fetchImages = async (fetchUrl = DEFAULT_FETCH_URL): Promise<GetImag
     const { results, previous, next } = response;
 
     const data: ImageMetadata[] = results.map(({ uuid, datetime_uploaded, original_file_url }) => ({
+        id: '',
         imageId: uuid,
         imageUploadDate: datetime_uploaded,
         imageContentUrl: original_file_url
@@ -52,19 +53,20 @@ export const fetchImages = async (fetchUrl = DEFAULT_FETCH_URL): Promise<GetImag
 
 export const postImage = async (imageFile: File): Promise<ImageMetadata> => {
     const formData = new FormData();
-    formData.append('UPLOADCARE_PUB_KEY', UPLOADCARE_PUBLIC_KEY);
-    formData.append('UPLOADCARE_STORE', '1'); // Store the file (0 = do not store, 1 = store)
+
     formData.append('file', imageFile);
 
     const httpClinet = new HTTPClient();
 
+    const authHeaderValue = `Uploadcare.Simple ${UPLOADCARE_PUBLIC_KEY}:${UPLOADCARE_SECRET_KEY}`;
+
     const contentTypeHeaderValue = 'multipart/form-data';
 
-    const headers = { ...httpClinet.baseHeaders, 'Content-Type': contentTypeHeaderValue };
+    const headers = { ...httpClinet.baseHeaders, 'Authorization': authHeaderValue, 'Content-Type': contentTypeHeaderValue };
 
     const response = await httpClinet.makeRequest<UploadcareFileMetadata>(
         'PUT',
-        UPLOAD_CARE_FILE_API_BASE_URL,
+        FILE_API_BASE_URL,
         {
             headers
         }
@@ -73,6 +75,7 @@ export const postImage = async (imageFile: File): Promise<ImageMetadata> => {
     const { uuid, datetime_uploaded, original_file_url } = response;
 
     return {
+        id: '',
         imageId: uuid,
         imageUploadDate: datetime_uploaded,
         imageContentUrl: original_file_url

@@ -5,6 +5,7 @@ export class HTTPClient {
         'Accept': 'application/json, application/vnd.uploadcare-v0.5+json',
         'Access-Control-Allow-Headers': '*',
         'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, GET, PUT, DELETE',
         'Content-Type': 'application/json;charset=UTF-8'
     };
     private readonly _requestTimeoutMS: number = 6000;

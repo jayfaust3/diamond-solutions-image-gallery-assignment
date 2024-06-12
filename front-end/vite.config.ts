@@ -9,4 +9,17 @@ export default defineConfig({
     }),
     tsconfigPaths(),
   ],
+  server: {
+    proxy: {
+      '/image-api': {
+        target: 'http://localhost:3789/api/images',
+        changeOrigin: true,
+        secure: false
+      },
+    },
+    cors: {
+      origin: '*',
+      methods: '*'
+    }
+  },
 });

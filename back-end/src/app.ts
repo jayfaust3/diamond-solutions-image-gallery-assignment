@@ -1,21 +1,24 @@
+import { dirname } from 'path';
 import express from 'express';
 import logger from 'morgan';
 import { config } from 'dotenv';
 import imagesRouter from './routes/images';
 
-config();
+config({
+  path: dirname(__dirname)
+});
 
-const PORT = process.env.PORT || 80;
+const {
+  PORT: appPort
+} = process.env;
 
 const app = express();
 
-const log = logger('dev');
-
 app
-  .use(log)
+  .use(logger('dev'))
   .use(express.json())
   .use(express.urlencoded({ extended: false }))
   .use('/api/images', imagesRouter)
   .use(express.json({limit: '25mb'}))
   .use(express.urlencoded({limit: '25mb', extended: true}))
-  .listen(PORT);
+  .listen(appPort ? +appPort : 80);

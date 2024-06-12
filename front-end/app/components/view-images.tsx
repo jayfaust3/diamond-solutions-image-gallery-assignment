@@ -18,7 +18,7 @@ export default function ViewImages() {
   const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
 
   const mapFileApiModelToFileViewmodel = (apiModel: ImageMetadata): IdentifyablePhoto => {
-    const { imageId: id, imageContentUrl: src } = apiModel;
+    const { id, imageContentUrl: src } = apiModel;
 
     return {
       id,

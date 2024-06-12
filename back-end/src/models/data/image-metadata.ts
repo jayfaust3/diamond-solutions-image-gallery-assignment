@@ -4,3 +4,5 @@ export interface ImageMetadata {
     imageUploadDate: string
     imageContentUrl: string
 }
+
+export type ImageMetadataInsertRequest = Pick<ImageMetadata, 'imageId' | 'imageUploadDate' | 'imageContentUrl'>
