@@ -32,8 +32,6 @@ export default function ViewImages() {
     try {
       return await fetchImagesFromApi(fetchUrl);
     } catch (error) {
-      console.log('Encountered an error while fetching images', { error });
-
       return {
         data: [],
         previous: null,
@@ -49,16 +47,7 @@ export default function ViewImages() {
       const { data, next } = await fetchImages();
 
       setImages(
-        // annoying workaround for the page loading twice locally when strict mode is enabled
-        (previousImages) => 
-          data.filter(
-            (initial) =>
-              !previousImages.some(
-                existingImage =>
-                  existingImage.id === initial.imageId
-              )
-          )
-          .map(mapFileApiModelToFileViewmodel)
+        data.map(mapFileApiModelToFileViewmodel)
       );
       
       setNextPageUrl(next);
@@ -74,8 +63,6 @@ export default function ViewImages() {
 
     const { data: newImages, previous, next } = await fetchImages(fetchUrl);
 
-    console.log('setting new images', { newImages });
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setImages(newImages.map(mapFileApiModelToFileViewmodel));
 
     setPreviousPageUrl(previous);
@@ -114,19 +101,11 @@ export default function ViewImages() {
   }, []);
 
   const handlePreviousClicked = useCallback(async () => {
-    if (previousPageUrl) {
-      await loadImages(previousPageUrl);
-    } else {
-      console.log(`'previousPageUrl' is null, not executing handlePreviousClicked()`);
-    }
+    if (previousPageUrl) await loadImages(previousPageUrl);
   }, [previousPageUrl, loadImages]);
 
   const handleNextClicked = useCallback(async () => {
-    if (nextPageUrl) {
-      await loadImages(nextPageUrl);
-    } else {
-      console.log(`'nextPageUrl' is null, not executing handleNextClicked()`);
-    }
+    if (nextPageUrl) await loadImages(nextPageUrl);
   }, [nextPageUrl, loadImages]);
 
   return (

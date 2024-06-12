@@ -19,19 +19,19 @@ const PAGE_LIMIT = 3;
 const DEFAULT_FETCH_URL = `https://api.uploadcare.com/files/?ordering=-datetime_uploaded&limit=${PAGE_LIMIT}`;
 
 export const fetchImages = async (fetchUrl = DEFAULT_FETCH_URL): Promise<GetImagesResponse> => {
-    console.log('fetching images', { fetchUrl });
-
     const httpClinet = new HTTPClient();
 
     const authHeaderValue = `Uploadcare.Simple ${UPLOADCARE_PUBLIC_KEY}:${UPLOADCARE_SECRET_KEY}`;
 
     const headers = { ...httpClinet.baseHeaders, 'Authorization': authHeaderValue };
 
-    const response = await httpClinet.makeRequest<UploadcareGetFilesResponse>('GET', fetchUrl, {
-        headers
-    });
-
-    console.log('fetched images', { response });
+    const response = await httpClinet.makeRequest<UploadcareGetFilesResponse>(
+        'GET',
+        fetchUrl,
+        {
+            headers
+        }
+    );
 
     const { results, previous, next } = response;
 
