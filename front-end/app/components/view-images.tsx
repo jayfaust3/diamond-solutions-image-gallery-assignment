@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Dropzone, ExtFile } from '@dropzone-ui/react';
 import PhotoAlbum, { ClickHandlerProps, Photo } from 'react-photo-album';
-import { fetchImages as fetchImagesFromApi } from '../utils';
+import { fetchImages as fetchImagesFromApi, postImage as postImageToApi } from '../utils';
 import { GetImagesResponse, ImageMetadata } from '../models';
 
 interface IdentifyablePhoto extends Photo { 
@@ -13,7 +13,7 @@ export default function ViewImages() {
   const imageHeight = 600;
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<IdentifyablePhoto[]>([]);
-  const [uploadedFiles, setUploadedFiles] = useState<ExtFile[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<ExtFile[]>([]);
   const [previousPageUrl, setPreviousPageUrl] = useState<string | null>(null);
   const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
 
@@ -40,25 +40,7 @@ export default function ViewImages() {
     }     
   }, []);
 
-  useEffect(() => {
-    const loadInitalImages = async () => {
-      setLoading(true);
-
-      const { data, next } = await fetchImages();
-
-      setImages(
-        data.map(mapFileApiModelToFileViewmodel)
-      );
-      
-      setNextPageUrl(next);
-
-      setLoading(false);
-    };
-
-    loadInitalImages();
-  }, [fetchImages]);
-
-  const loadImages = useCallback(async (fetchUrl: string) => {
+  const loadImages = useCallback(async (fetchUrl?: string) => {
     setLoading(true);
 
     const { data: newImages, previous, next } = await fetchImages(fetchUrl);
@@ -73,25 +55,46 @@ export default function ViewImages() {
   }, [setLoading, setImages, fetchImages]);
 
   useEffect(() => {
-    if (uploadedFiles.length) {
+    loadImages();
+  }, [loadImages]);
+
+  useEffect(() => {
+    const handleUploadChange = async () => {
       setLoading(true);
-      //POST file to API
-      setImages(
-        (prevImages) => [
-          // newImage,
-          ...prevImages
-        ]
-      );
-      setUploadedFiles([]);
+
+      if (uploadedImages.length) {
+        const [uploadedImage] = uploadedImages;
+
+        const { file: imageFile } = uploadedImage;
+
+        if (imageFile) {
+          try {
+            const postedImage = await postImageToApi(imageFile);
+
+            setImages(
+              (prevImages) => [
+                mapFileApiModelToFileViewmodel(postedImage),
+                ...prevImages
+              ]
+            );
+          } catch (error) {
+            console.log('An error occurred while uploading the image', { error });
+          }
+        }
+        
+        setUploadedImages([]);
+      }
+
       setLoading(false);
-    }
-  }, [uploadedFiles]);
+    };
+    
+    handleUploadChange();
+  }, [uploadedImages]);
 
-  // update file collection, let observation functionality post and update images
-  const handleUploadComplete = useCallback((newlyUploadedFiles: ExtFile[]) => {
-    const [uploadedFile] = newlyUploadedFiles;
+  const handleUploadComplete = useCallback((newlyUploadedImages: ExtFile[]) => {
+    const [newlyUploadedImage] = newlyUploadedImages;
 
-    setUploadedFiles([uploadedFile]);
+    setUploadedImages([newlyUploadedImage]);
   }, []);
 
   const handleImageClicked = useCallback(async ({ photo }: ClickHandlerProps<IdentifyablePhoto>) => {
@@ -114,7 +117,7 @@ export default function ViewImages() {
       <Dropzone 
         onChange={handleUploadComplete}
         maxFiles={1}
-        value={uploadedFiles}
+        value={uploadedImages}
         accept={'image/jpeg, image/jpg, image/png'}
         behaviour={'replace'}
       />
