@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Dropzone, ExtFile } from '@dropzone-ui/react';
 import PhotoAlbum, { ClickHandlerProps, Photo } from 'react-photo-album';
 import { fetchImages as fetchImagesFromApi } from '../utils';
-import { ImageMetadata } from '../models';
+import { GetImagesResponse, ImageMetadata } from '../models';
 
 interface IdentifyablePhoto extends Photo { 
   id: string
@@ -11,13 +11,11 @@ interface IdentifyablePhoto extends Photo {
 export default function ViewImages() {
   const imageWidth = 800;
   const imageHeight = 600;
-  const pageLimit = 3;
-  const [pageNumber, setPageNumber] = useState(1);
-  const [images, setImages] = useState<IdentifyablePhoto[]>([]);
   const [loading, setLoading] = useState(false);
-  const [hasPrevious, setHasPrevious] = useState(false);
-  const [hasNext, setHasNext] = useState(false);
+  const [images, setImages] = useState<IdentifyablePhoto[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<ExtFile[]>([]);
+  const [previousPageUrl, setPreviousPageUrl] = useState<string | null>(null);
+  const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
 
   const mapFileApiModelToFileViewmodel = (apiModel: ImageMetadata): IdentifyablePhoto => {
     const { imageId: id, imageContentUrl: src } = apiModel;
@@ -30,60 +28,62 @@ export default function ViewImages() {
     };
   };
 
-  const fetchImages = useCallback(async (page: number): Promise<IdentifyablePhoto[]> => {
-    let fetchedImages: IdentifyablePhoto[] = [];
-
+  const fetchImages = useCallback(async (fetchUrl?: string): Promise<GetImagesResponse> => {
     try {
-      const imagesFromApi: ImageMetadata[] = await fetchImagesFromApi(pageLimit, page);
-
-      fetchedImages = imagesFromApi.map(mapFileApiModelToFileViewmodel);
+      return await fetchImagesFromApi(fetchUrl);
     } catch (error) {
       console.log('Encountered an error while fetching images', { error });
-    } 
-    
-    return fetchedImages;
+
+      return {
+        data: [],
+        previous: null,
+        next: null
+      }
+    }     
   }, []);
 
   useEffect(() => {
     const loadInitalImages = async () => {
       setLoading(true);
 
-      const initalImages: IdentifyablePhoto[] = await fetchImages(1);
+      const { data, next } = await fetchImages();
 
       setImages(
         // annoying workaround for the page loading twice locally when strict mode is enabled
-        initalImages.filter(
-          (newImage) => 
-            !images.some(
-              existingImage =>
-                existingImage.id === newImage.id
-            )
-        )
+        (previousImages) => 
+          data.filter(
+            (initial) =>
+              !previousImages.some(
+                existingImage =>
+                  existingImage.id === initial.imageId
+              )
+          )
+          .map(mapFileApiModelToFileViewmodel)
       );
-        
+      
+      setNextPageUrl(next);
+
       setLoading(false);
     };
 
     loadInitalImages();
-  }, []);
+  }, [fetchImages]);
 
-  const loadImages = useCallback(async (page: number) => {
+  const loadImages = useCallback(async (fetchUrl: string) => {
     setLoading(true);
 
-    const newImages: IdentifyablePhoto[] = await fetchImages(page);
+    const { data: newImages, previous, next } = await fetchImages(fetchUrl);
 
-    setImages(newImages);
-        
+    console.log('setting new images', { newImages });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setImages(newImages.map(mapFileApiModelToFileViewmodel));
+
+    setPreviousPageUrl(previous);
+
+    setNextPageUrl(next);
+
     setLoading(false);
   }, [setLoading, setImages, fetchImages]);
-
-  useEffect(() => {
-    setHasNext(images.length === pageLimit);
-  }, [images]);
-
-  useEffect(() => {
-    setHasPrevious(pageNumber > 1);
-  }, [pageNumber]);
 
   useEffect(() => {
     if (uploadedFiles.length) {
@@ -114,21 +114,20 @@ export default function ViewImages() {
   }, []);
 
   const handlePreviousClicked = useCallback(async () => {
-    if (hasPrevious) {
-      const newPageNumber = pageNumber - 1;
-      await loadImages(newPageNumber);
-      setPageNumber(newPageNumber);
+    if (previousPageUrl) {
+      await loadImages(previousPageUrl);
+    } else {
+      console.log(`'previousPageUrl' is null, not executing handlePreviousClicked()`);
     }
-    
-  }, [hasPrevious, pageNumber, loadImages]);
+  }, [previousPageUrl, loadImages]);
 
   const handleNextClicked = useCallback(async () => {
-    if (hasNext) {
-      const newPageNumber = pageNumber + 1;
-      await loadImages(newPageNumber);
-      setPageNumber(newPageNumber);
+    if (nextPageUrl) {
+      await loadImages(nextPageUrl);
+    } else {
+      console.log(`'nextPageUrl' is null, not executing handleNextClicked()`);
     }
-  }, [hasNext, pageNumber, loadImages]);
+  }, [nextPageUrl, loadImages]);
 
   return (
     <div>
@@ -144,10 +143,10 @@ export default function ViewImages() {
         <PhotoAlbum layout="rows" photos={images} onClick={handleImageClicked}/>
       </div>
         {loading && <p>Loading...</p>}
-        {hasPrevious && !loading && (
+        {Boolean(previousPageUrl) && !loading && (
           <button onClick={handlePreviousClicked}>Previous</button>
         )}
-        {hasNext && !loading && (
+        {Boolean(nextPageUrl) && !loading && (
           <button onClick={handleNextClicked}>Next</button>
         )}
     </div>

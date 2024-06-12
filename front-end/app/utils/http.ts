@@ -25,7 +25,7 @@ export class HTTPClient {
             options?.payload
         ) body = JSON.stringify(options.payload);
 
-        setTimeout(this._abortController.abort, this._requestTimeoutMS);
+        // setTimeout(this._abortController.abort, this._requestTimeoutMS);
             
         const response: Response = await fetch(
             url, 

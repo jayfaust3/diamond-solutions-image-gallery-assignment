@@ -1,23 +1,25 @@
-import { ImageMetadata } from '../models';
+import { GetImagesResponse, ImageMetadata } from '../models';
 import { HTTPClient } from './http';
 
 interface UploadcareFileMetadata {
     uuid: string
     datetime_uploaded: string
     original_file_url: string
-  }
+}
   
 interface UploadcareGetFilesResponse {
-    next?: string | null
     results: UploadcareFileMetadata[]
+    previous: string | null
+    next: string | null
 }
 
 const UPLOADCARE_PUBLIC_KEY = '';
 const UPLOADCARE_SECRET_KEY = '';
+const PAGE_LIMIT = 3;
+const DEFAULT_FETCH_URL = `https://api.uploadcare.com/files/?ordering=-datetime_uploaded&limit=${PAGE_LIMIT}`;
 
-export const fetchImages = async (pageLimit: number, pageNumber = 1): Promise<ImageMetadata[]> => {
-    const offset = (pageNumber - 1) * pageLimit;
-    const fetchUrl = `https://api.uploadcare.com/files/?limit=${pageLimit}&offset=-${offset}`;
+export const fetchImages = async (fetchUrl = DEFAULT_FETCH_URL): Promise<GetImagesResponse> => {
+    console.log('fetching images', { fetchUrl });
 
     const httpClinet = new HTTPClient();
 
@@ -29,12 +31,20 @@ export const fetchImages = async (pageLimit: number, pageNumber = 1): Promise<Im
         headers
     });
 
-    const { results } = response;
+    console.log('fetched images', { response });
 
-    return results.map(({ uuid, datetime_uploaded, original_file_url }) => ({
+    const { results, previous, next } = response;
+
+    const data: ImageMetadata[] = results.map(({ uuid, datetime_uploaded, original_file_url }) => ({
         imageId: uuid,
         imageUploadDate: datetime_uploaded,
         imageContentUrl: original_file_url
     }));
+
+    return {
+        previous,
+        next,
+        data
+    };
 };
 
