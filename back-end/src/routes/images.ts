@@ -9,13 +9,18 @@ const upload = multer({ storage: storage });
 
 router.get(
     '/',
-    ImageController.get
+    ImageController.getImages
 );
 
 router.post(
     '/',
     upload.single('image'),
-    ImageController.post
+    ImageController.postImage
+);
+
+router.delete(
+    '/:id',
+    ImageController.deleteImage
 );
 
 export default router;

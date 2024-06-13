@@ -9,4 +9,6 @@ export interface IImageCRUDService {
             offset?: number
         }
     ): Promise<ImageMetadata[]>;
+
+    delete(imageMetadataId: string): Promise<void>;
 }

@@ -1,4 +1,5 @@
 import {
+    deleteFile,
     FileInfo,
     storeFile,
     UploadcareSimpleAuthSchema,
@@ -43,5 +44,16 @@ export class UploadCare implements ImageClient{
             imageContentUrl,
             imageUploadDate
         }
+    }
+
+    async delete(imageId: string): Promise<void> {
+        await deleteFile(
+            { 
+                uuid: imageId
+            },
+            {
+                authSchema: this._authSchema 
+            }
+        );
     }
 }

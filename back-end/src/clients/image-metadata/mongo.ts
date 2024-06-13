@@ -9,6 +9,18 @@ export class MongoDb implements ImageMetadataClient {
         this._imageCollectionClient = imageCollectionClient;
     }
 
+    async getSingle(imageMetadataId: string): Promise<ImageMetadata | null> {
+        let imageMetadata: ImageMetadata | null = null;
+
+        const objectId = new ObjectId(imageMetadataId);
+
+        const result = await this._imageCollectionClient.findOne({ _id: objectId });
+
+        if (result) imageMetadata = MongoDb.mapFindResultModelToAppModel(result);
+
+        return imageMetadata;
+    }
+
     async get (limit: number, offset?: number): Promise<ImageMetadata[]> {
         const cursor = this._imageCollectionClient
             .find()

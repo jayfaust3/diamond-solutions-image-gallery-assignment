@@ -34,4 +34,16 @@ export class ImageCRUDService implements IImageCRUDService {
 
         return this._imageMetadataClient.get(limit, offset);
     }
+
+    async delete(imageMetadataId: string): Promise<void> {
+        const imageMetadataToDelete = await this._imageMetadataClient.getSingle(imageMetadataId);
+
+        if (imageMetadataToDelete) {
+            const { imageId } = imageMetadataToDelete;
+            
+            await this._imageMetadataClient.delete(imageMetadataId);
+
+            await this._imageClient.delete(imageId);
+        }
+    }
 }

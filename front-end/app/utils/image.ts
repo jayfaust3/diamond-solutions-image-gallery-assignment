@@ -38,3 +38,11 @@ export const postImage = async (imageFile: File): Promise<ImageMetadata> => {
 
     return data;
 };
+
+export const deleteImage = async (imageId: string): Promise<void> => {
+    const deleteUrl = `${imageApiUrl}/${imageId}`
+    
+    await fetch(deleteUrl, {
+        method: 'DELETE'
+    });
+};

@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Dropzone, ExtFile } from '@dropzone-ui/react';
 import PhotoAlbum, { ClickHandlerProps, Photo } from 'react-photo-album';
-import { fetchImages as fetchImagesFromApi, postImage as postImageToApi } from '../utils';
+import {
+  fetchImages as fetchImagesFromApi,
+  postImage as postImageToApi,
+  deleteImage as deleteImageFromApi
+} from '../utils';
 import { ImageMetadata } from '../models';
 import ViewImage from './view-image';
 
@@ -114,6 +118,12 @@ export default function ViewImages() {
     if (hasNext) setPageNumber(pageNumber + 1);
   }, [hasNext, setPageNumber]);
 
+  const imageDeleteCallback = useCallback(async (imageId: string) => {
+    await deleteImageFromApi(imageId);
+    setPageNumber(1);
+    loadImages();
+  }, []);
+
   const modalCloseCallback = useCallback(() => {
     setModalOpen(false);
     setTargetImage(null);
@@ -123,7 +133,7 @@ export default function ViewImages() {
     <div>
       {modalOpen && targetImage ? (
         <div>
-          <ViewImage image={targetImage} closeCallback={modalCloseCallback} />
+          <ViewImage image={targetImage} closeCallback={modalCloseCallback} deleteCallback={imageDeleteCallback} />
         </div>
       ) : (
         <div>

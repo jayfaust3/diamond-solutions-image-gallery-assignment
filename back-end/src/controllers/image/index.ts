@@ -1,7 +1,9 @@
-import get from './get';
-import post from './post';
+import getImages from './get';
+import postImage from './post';
+import deleteImage from './delete';
 
 export {
-    get,
-    post
+    getImages,
+    postImage,
+    deleteImage
 }
