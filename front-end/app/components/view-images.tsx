@@ -126,15 +126,17 @@ export default function ViewImages() {
   }, []);
 
   return (
-    <div>
+    <div className='content-wrapper'>
       {modalOpen && targetImage ? (
-        <div>
+        <div className='content-wrapper centered-wrapper'>
           <ViewImage image={targetImage} closeCallback={modalCloseCallback} deleteCallback={imageDeleteCallback} />
         </div>
       ) : (
-        <div>
-          <h1>Image Gallery</h1>
-          <div>
+        <div className='content-wrapper'>
+          <div className='right-justify'>
+            <h1>Image Gallery</h1>
+          </div>
+          <div className='content-wrapper'>
             <Dropzone
               onChange={handleUploadComplete}
               maxFiles={1}
@@ -143,16 +145,18 @@ export default function ViewImages() {
               behaviour={'replace'}
             />
           </div>
-          <div className="gallery">
-            <PhotoAlbum layout="rows" photos={images} onClick={handleImageClicked} />
+          <div className='content-wrapper'>
+            <PhotoAlbum layout='masonry' photos={images} onClick={handleImageClicked} />
           </div>
-          {loading && <p>Loading...</p>}
-          {hasPrevious && !loading && (
-            <button onClick={handlePreviousClicked}>Previous</button>
-          )}
-          {hasNext && !loading && (
-            <button onClick={handleNextClicked}>Next</button>
-          )}
+          <div className='right-justify content-wrapper even-spacing'>
+            {loading && <p>Loading...</p>}
+            {hasPrevious && !loading && (
+              <button onClick={handlePreviousClicked}>Previous</button>
+            )}
+            {hasNext && !loading && (
+              <button onClick={handleNextClicked}>Next</button>
+            )}
+          </div>
         </div>
       )}
     </div>

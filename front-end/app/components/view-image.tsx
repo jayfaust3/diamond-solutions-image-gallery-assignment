@@ -22,12 +22,12 @@ export default function ViewImage(props: {
   }, [closeCallback, deleteCallback, imageData]);
 
   return (
-    <div>
-        <div>
+    <div className='content-wrapper'>
+        <div className='content-wrapper'>
             <PhotoAlbum layout="rows" photos={[imageData]}/>
         </div>
-        <div>
-          <button onClick={handleDeleteClicked}>Delete</button>
+        <div className='right-justify content-wrapper even-spacing'>
+          <button className='delete-button' onClick={handleDeleteClicked}>Delete</button>
           <button onClick={handleCloseClicked}>Close</button>
         </div>
     </div>
