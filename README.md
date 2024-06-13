@@ -27,4 +27,5 @@ To run the Photo Gallery App locally, follow these steps:
 Once the servers are started, you can access the app at:
 
 Front-end (Remix): http://localhost:5173
+
 Back-end (Express API): http://localhost:3789
