@@ -1,19 +1,15 @@
-// import type { LinksFunction } from '@remix-run/node';
+import type { LinksFunction } from '@remix-run/node';
 import {
-  // Form,
   Links,
   Meta,
-  // Outlet,
   Scripts,
   ScrollRestoration,
 } from '@remix-run/react';
 // eslint-disable-next-line import/no-unresolved
-// import globalStylesUrl from './styles/global.css';
+import globalStylesUrl from '~/styles/global.css?url';
 import ViewImages from './components/view-images';
 
-// export const links: LinksFunction = () => [
-//   { rel: 'stylesheet', href: globalStylesUrl },
-// ];
+export const links: LinksFunction = () => [{ rel: "stylesheet", href: globalStylesUrl }];
 
 export default function Root() {
   return (
@@ -25,19 +21,12 @@ export default function Root() {
         <Links />
       </head>
       <body>
-      <header>
-          <nav>
-            <a href="/">Home</a>
-            {/* Add more navigation links here */}
-          </nav>
-        </header>
         <main>
-          {/* <Outlet /> */}
           <ViewImages />
+          <footer>
+            <p>© Diamond Solutions</p>
+          </footer>
         </main>
-        <footer>
-          <p>© Diamond Solutions</p>
-        </footer>
         <ScrollRestoration />
         <Scripts />
       </body>

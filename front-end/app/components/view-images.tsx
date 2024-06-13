@@ -3,6 +3,7 @@ import { Dropzone, ExtFile } from '@dropzone-ui/react';
 import PhotoAlbum, { ClickHandlerProps, Photo } from 'react-photo-album';
 import { fetchImages as fetchImagesFromApi, postImage as postImageToApi } from '../utils';
 import { ImageMetadata } from '../models';
+import ViewImage from './view-image';
 
 interface IdentifyablePhoto extends Photo { 
   id: string
@@ -18,6 +19,8 @@ export default function ViewImages() {
   const [pageNumber, setPageNumber] = useState(1);
   const [hasPrevious, setHasPrevious] = useState(false);
   const [hasNext, setHasNext] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [targetImage, setTargetImage] = useState<IdentifyablePhoto | null>(null);
 
   const mapFileApiModelToFileViewmodel = (apiModel: ImageMetadata): IdentifyablePhoto => {
     const { id, imageContentUrl: src } = apiModel;
@@ -51,7 +54,7 @@ export default function ViewImages() {
 
     setImages(newImages.map(mapFileApiModelToFileViewmodel));
 
-    setHasPrevious(pageNumber > 0);
+    setHasPrevious(pageNumber > 1);
 
     setHasNext(newImages.length === pageLimit);
 
@@ -76,6 +79,8 @@ export default function ViewImages() {
             await postImageToApi(imageFile);
 
             setPageNumber(1);
+
+            loadImages();
           } catch (error) {
             console.log('An error occurred while uploading the image', { error });
           }
@@ -97,9 +102,8 @@ export default function ViewImages() {
   }, []);
 
   const handleImageClicked = useCallback(async ({ photo }: ClickHandlerProps<IdentifyablePhoto>) => {
-    setLoading(true);
-    console.log('image clicked', { photo });
-    setLoading(false);
+    setTargetImage(photo);
+    setModalOpen(true);
   }, []);
 
   const handlePreviousClicked = useCallback(async () => {
@@ -110,26 +114,41 @@ export default function ViewImages() {
     if (hasNext) setPageNumber(pageNumber + 1);
   }, [hasNext, setPageNumber]);
 
+  const modalCloseCallback = useCallback(() => {
+    setModalOpen(false);
+    setTargetImage(null);
+  }, []);
+
   return (
     <div>
-      <h1>Image Gallery</h1>
-      <Dropzone 
-        onChange={handleUploadComplete}
-        maxFiles={1}
-        value={uploadedImages}
-        accept={'image/jpeg, image/jpg, image/png'}
-        behaviour={'replace'}
-      />
-      <div className="gallery">
-        <PhotoAlbum layout="rows" photos={images} onClick={handleImageClicked}/>
-      </div>
-        {loading && <p>Loading...</p>}
-        {Boolean(hasPrevious) && !loading && (
-          <button onClick={handlePreviousClicked}>Previous</button>
-        )}
-        {Boolean(hasNext) && !loading && (
-          <button onClick={handleNextClicked}>Next</button>
-        )}
+      {modalOpen && targetImage ? (
+        <div>
+          <ViewImage image={targetImage} closeCallback={modalCloseCallback} />
+        </div>
+      ) : (
+        <div>
+          <h1>Image Gallery</h1>
+          <div>
+            <Dropzone
+              onChange={handleUploadComplete}
+              maxFiles={1}
+              value={uploadedImages}
+              accept={'image/jpeg, image/jpg, image/png'}
+              behaviour={'replace'}
+            />
+          </div>
+          <div className="gallery">
+            <PhotoAlbum layout="rows" photos={images} onClick={handleImageClicked} />
+          </div>
+          {loading && <p>Loading...</p>}
+          {hasPrevious && !loading && (
+            <button onClick={handlePreviousClicked}>Previous</button>
+          )}
+          {hasNext && !loading && (
+            <button onClick={handleNextClicked}>Next</button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
