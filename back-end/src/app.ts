@@ -3,6 +3,7 @@ import express from 'express';
 import logger from 'morgan';
 import { config } from 'dotenv';
 import imagesRouter from './routes/images';
+import { errorMiddleware } from './middleware';
 
 config({
   path: `${dirname(__dirname)}/.env`
@@ -23,4 +24,5 @@ app
   .use('/api/images', imagesRouter)
   // .use(express.json({limit: '25mb'}))
   // .use(express.urlencoded({limit: '25mb', extended: true}))
+  .use(errorMiddleware)
   .listen(appPort);
