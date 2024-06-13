@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "start": "ts-node src/app.ts"
   },
   "dependencies": {
     "@uploadcare/rest-client": "^6.14.1",

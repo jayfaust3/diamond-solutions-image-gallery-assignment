@@ -5,12 +5,14 @@ import { config } from 'dotenv';
 import imagesRouter from './routes/images';
 
 config({
-  path: dirname(__dirname)
+  path: `${dirname(__dirname)}/.env`
 });
 
 const {
-  PORT: appPort
+  PORT
 } = process.env;
+
+const appPort = PORT ? +PORT : 80;
 
 const app = express();
 
@@ -21,4 +23,4 @@ app
   .use('/api/images', imagesRouter)
   .use(express.json({limit: '25mb'}))
   .use(express.urlencoded({limit: '25mb', extended: true}))
-  .listen(appPort ? +appPort : 80);
+  .listen(appPort);

@@ -1,4 +1,4 @@
-import { MongoClient, ServerApiVersion } from 'mongodb';
+import { Document, MongoClient, ServerApiVersion } from 'mongodb';
 
 export const getMongoDbCollectionClient = async <TCollectionType extends Document = Document>(collectionName: string) => {
     const {
