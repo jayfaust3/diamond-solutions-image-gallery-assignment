@@ -1,0 +1,9 @@
+{
+  "name": "image-gallery-app",
+  "version": "1.0.0",
+  "description": "An image gallery application",
+  "scripts": {
+    "install:all": "npm --prefix back-end install && npm --prefix front-end install",
+    "start:all": "npm --prefix back-end start & npm --prefix front-end dev"
+  }
+}
