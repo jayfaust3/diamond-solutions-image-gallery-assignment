@@ -4,6 +4,6 @@
   "description": "An image gallery application",
   "scripts": {
     "install:all": "npm --prefix back-end install && npm --prefix front-end install",
-    "start:all": "npm --prefix back-end start & npm --prefix front-end dev"
+    "start:all": "npm --prefix back-end run start & npm --prefix front-end run dev"
   }
 }
