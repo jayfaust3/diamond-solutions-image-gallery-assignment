@@ -14,7 +14,8 @@ export default defineConfig({
       '/image-api': {
         target: 'http://localhost:3789/api/images',
         changeOrigin: true,
-        secure: false
+        secure: false,
+        rewrite: (path) => path.replace(/^\/image-api/, ''),
       },
     },
     cors: {

@@ -2,7 +2,7 @@ type HTTPMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
 export class HTTPClient {
     public readonly baseHeaders: Record<string, string> = {
-        'Accept': 'application/json, application/vnd.uploadcare-v0.5+json',
+        'Accept': 'application/json',
         'Access-Control-Allow-Headers': '*',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST, GET, PUT, DELETE',

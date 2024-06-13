@@ -1,83 +1,42 @@
-import FormData from 'form-data';
-import { GetImagesResponse, ImageMetadata } from '../models';
+import { GetImagesResponse, ImageMetadata, PostImageResponse } from '../models';
 import { HTTPClient } from './http';
 
-interface UploadcareFileMetadata {
-    uuid: string
-    datetime_uploaded: string
-    original_file_url: string
-}
-  
-interface UploadcareGetFilesResponse {
-    results: UploadcareFileMetadata[]
-    previous: string | null
-    next: string | null
-}
+const imageApiUrl = '/image-api';
 
-const UPLOADCARE_PUBLIC_KEY = '';
-const UPLOADCARE_SECRET_KEY = '';
-const PAGE_LIMIT = 3;
-const FILE_API_BASE_URL = '/image-api';
-const DEFAULT_FETCH_URL = `${FILE_API_BASE_URL}/?ordering=-datetime_uploaded&limit=${PAGE_LIMIT}`;
-
-export const fetchImages = async (fetchUrl = DEFAULT_FETCH_URL): Promise<GetImagesResponse> => {
+export const fetchImages = async (pageRequest: {
+    limit: number
+    offset?: number
+}): Promise<ImageMetadata[]> => {
     const httpClinet = new HTTPClient();
 
-    const authHeaderValue = `Uploadcare.Simple ${UPLOADCARE_PUBLIC_KEY}:${UPLOADCARE_SECRET_KEY}`;
+    const { limit, offset } = pageRequest;
 
-    const headers = { ...httpClinet.baseHeaders, 'Authorization': authHeaderValue };
+    let requestUrl = `${imageApiUrl}?limit=${limit}`;
 
-    const response = await httpClinet.makeRequest<UploadcareGetFilesResponse>(
+    if (offset) requestUrl += `offset=${offset}`
+
+    const response = await httpClinet.makeRequest<GetImagesResponse>(
         'GET',
-        fetchUrl,
-        {
-            headers
-        }
+        requestUrl
     );
 
-    const { results, previous, next } = response;
+    const { data } = response;
 
-    const data: ImageMetadata[] = results.map(({ uuid, datetime_uploaded, original_file_url }) => ({
-        id: '',
-        imageId: uuid,
-        imageUploadDate: datetime_uploaded,
-        imageContentUrl: original_file_url
-    }));
-
-    return {
-        previous,
-        next,
-        data
-    };
+    return data;
 };
 
 export const postImage = async (imageFile: File): Promise<ImageMetadata> => {
-    const formData = new FormData();
+    const httpClinet = new HTTPClient()
 
-    formData.append('file', imageFile);
-
-    const httpClinet = new HTTPClient();
-
-    const authHeaderValue = `Uploadcare.Simple ${UPLOADCARE_PUBLIC_KEY}:${UPLOADCARE_SECRET_KEY}`;
-
-    const contentTypeHeaderValue = 'multipart/form-data';
-
-    const headers = { ...httpClinet.baseHeaders, 'Authorization': authHeaderValue, 'Content-Type': contentTypeHeaderValue };
-
-    const response = await httpClinet.makeRequest<UploadcareFileMetadata>(
-        'PUT',
-        FILE_API_BASE_URL,
+    const response = await httpClinet.makeRequest<PostImageResponse>(
+        'POST',
+        imageApiUrl,
         {
-            headers
+            payload: imageFile
         }
     );
 
-    const { uuid, datetime_uploaded, original_file_url } = response;
+    const { data } = response;
 
-    return {
-        id: '',
-        imageId: uuid,
-        imageUploadDate: datetime_uploaded,
-        imageContentUrl: original_file_url
-    }
+    return data;
 };

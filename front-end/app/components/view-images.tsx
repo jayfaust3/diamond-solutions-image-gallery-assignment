@@ -2,20 +2,22 @@ import { useState, useEffect, useCallback } from 'react';
 import { Dropzone, ExtFile } from '@dropzone-ui/react';
 import PhotoAlbum, { ClickHandlerProps, Photo } from 'react-photo-album';
 import { fetchImages as fetchImagesFromApi, postImage as postImageToApi } from '../utils';
-import { GetImagesResponse, ImageMetadata } from '../models';
+import { ImageMetadata } from '../models';
 
 interface IdentifyablePhoto extends Photo { 
   id: string
 }
 
 export default function ViewImages() {
+  const pageLimit = 10;
   const imageWidth = 800;
   const imageHeight = 600;
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<IdentifyablePhoto[]>([]);
   const [uploadedImages, setUploadedImages] = useState<ExtFile[]>([]);
-  const [previousPageUrl, setPreviousPageUrl] = useState<string | null>(null);
-  const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [hasPrevious, setHasPrevious] = useState(false);
+  const [hasNext, setHasNext] = useState(false);
 
   const mapFileApiModelToFileViewmodel = (apiModel: ImageMetadata): IdentifyablePhoto => {
     const { id, imageContentUrl: src } = apiModel;
@@ -28,31 +30,33 @@ export default function ViewImages() {
     };
   };
 
-  const fetchImages = useCallback(async (fetchUrl?: string): Promise<GetImagesResponse> => {
+  const fetchImages = useCallback(async (pageRequest: {
+    limit: number
+    offset?: number
+  }): Promise<ImageMetadata[]> => {
     try {
-      return await fetchImagesFromApi(fetchUrl);
+      return await fetchImagesFromApi(pageRequest);
     } catch (error) {
-      return {
-        data: [],
-        previous: null,
-        next: null
-      }
+      return [];
     }     
   }, []);
 
-  const loadImages = useCallback(async (fetchUrl?: string) => {
+  const loadImages = useCallback(async () => {
     setLoading(true);
 
-    const { data: newImages, previous, next } = await fetchImages(fetchUrl);
+    const newImages = await fetchImages({
+      limit: pageLimit,
+      offset: (pageNumber - 1) * pageLimit
+    });
 
     setImages(newImages.map(mapFileApiModelToFileViewmodel));
 
-    setPreviousPageUrl(previous);
+    setHasPrevious(pageNumber > 0);
 
-    setNextPageUrl(next);
+    setHasNext(newImages.length === pageLimit);
 
     setLoading(false);
-  }, [setLoading, setImages, fetchImages]);
+  }, [setLoading, setImages, fetchImages, pageNumber]);
 
   useEffect(() => {
     loadImages();
@@ -69,14 +73,9 @@ export default function ViewImages() {
 
         if (imageFile) {
           try {
-            const postedImage = await postImageToApi(imageFile);
+            await postImageToApi(imageFile);
 
-            setImages(
-              (prevImages) => [
-                mapFileApiModelToFileViewmodel(postedImage),
-                ...prevImages
-              ]
-            );
+            setPageNumber(1);
           } catch (error) {
             console.log('An error occurred while uploading the image', { error });
           }
@@ -104,12 +103,12 @@ export default function ViewImages() {
   }, []);
 
   const handlePreviousClicked = useCallback(async () => {
-    if (previousPageUrl) await loadImages(previousPageUrl);
-  }, [previousPageUrl, loadImages]);
+    if (hasPrevious) setPageNumber(pageNumber - 1);
+  }, [hasPrevious, setPageNumber]);
 
   const handleNextClicked = useCallback(async () => {
-    if (nextPageUrl) await loadImages(nextPageUrl);
-  }, [nextPageUrl, loadImages]);
+    if (hasNext) setPageNumber(pageNumber + 1);
+  }, [hasNext, setPageNumber]);
 
   return (
     <div>
@@ -125,10 +124,10 @@ export default function ViewImages() {
         <PhotoAlbum layout="rows" photos={images} onClick={handleImageClicked}/>
       </div>
         {loading && <p>Loading...</p>}
-        {Boolean(previousPageUrl) && !loading && (
+        {Boolean(hasPrevious) && !loading && (
           <button onClick={handlePreviousClicked}>Previous</button>
         )}
-        {Boolean(nextPageUrl) && !loading && (
+        {Boolean(hasNext) && !loading && (
           <button onClick={handleNextClicked}>Next</button>
         )}
     </div>
