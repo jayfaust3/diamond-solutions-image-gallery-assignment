@@ -7,8 +7,7 @@ const post: RequestHandler = async (req: PostImageRequest, res: Response) => {
     const imageFile = req.file;
 
     if (!imageFile) {
-        console.log('No file uploaded.', { req });
-        res.status(400).send({ message: 'No file uploaded.' });
+        res.status(400).send({ message: 'The request did not contain a file' });
 
         return;
     }
@@ -17,11 +16,13 @@ const post: RequestHandler = async (req: PostImageRequest, res: Response) => {
 
     const service: IImageCRUDService = await getImageCRUDService();
 
-    const result: ImageMetadata = await service.create(imageBuffer);
+    const createResult: ImageMetadata = await service.create(imageBuffer);
 
-    res.status(201).send({
-        data: result
-    });
+    const response: PostImageResponse = {
+        data: createResult
+    } 
+
+    res.status(201).send(response);
 };
 
 export default post;

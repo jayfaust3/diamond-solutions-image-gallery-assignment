@@ -34,7 +34,9 @@ export class UploadCare implements ImageClient{
             }
         );
 
-        const {  datetimeUploaded: imageUploadDate, url: imageContentUrl} = storageResult;
+        const {  datetimeUploaded: imageUploadDate, originalFileUrl: imageContentUrl} = storageResult;
+
+        if (!imageContentUrl) throw new Error('Public url not set');
 
         return {
             imageId,
