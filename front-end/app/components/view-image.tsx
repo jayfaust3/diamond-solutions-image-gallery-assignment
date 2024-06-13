@@ -1,9 +1,6 @@
 import { useState, useCallback } from 'react';
-import PhotoAlbum, { Photo } from 'react-photo-album';
-
-interface IdentifyablePhoto extends Photo { 
-  id: string
-}
+import PhotoAlbum from 'react-photo-album';
+import { IdentifyablePhoto } from '../models';
 
 export default function ViewImage(props: {
     image: IdentifyablePhoto

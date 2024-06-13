@@ -1,17 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
 import { Dropzone, ExtFile } from '@dropzone-ui/react';
-import PhotoAlbum, { ClickHandlerProps, Photo } from 'react-photo-album';
+import { useState, useEffect, useCallback } from 'react';
+import PhotoAlbum, { ClickHandlerProps } from 'react-photo-album';
 import {
   fetchImages as fetchImagesFromApi,
   postImage as postImageToApi,
   deleteImage as deleteImageFromApi
 } from '../utils';
-import { ImageMetadata } from '../models';
+import { IdentifyablePhoto, ImageMetadata } from '../models';
 import ViewImage from './view-image';
-
-interface IdentifyablePhoto extends Photo { 
-  id: string
-}
 
 export default function ViewImages() {
   const pageLimit = 10;
