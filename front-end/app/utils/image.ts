@@ -10,7 +10,7 @@ export const fetchImages = async (pageRequest: {
 
     let requestUrl = `${imageApiUrl}?limit=${limit}`;
 
-    if (offset) requestUrl += `offset=${offset}`;
+    if (offset) requestUrl += `&offset=${offset}`;
 
     const response = await fetch(requestUrl, {
         method: 'GET',

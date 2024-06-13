@@ -24,9 +24,9 @@ export class MongoDb implements ImageMetadataClient {
     async get (limit: number, offset?: number): Promise<ImageMetadata[]> {
         const cursor = this._imageCollectionClient
             .find()
-            .limit(limit);
-
-        if (offset) cursor.skip(offset);
+            .sort('imageUploadDate', 'desc')
+            .limit(limit)
+            .skip(offset ?? 0);
 
         const results = await cursor.toArray();
 
