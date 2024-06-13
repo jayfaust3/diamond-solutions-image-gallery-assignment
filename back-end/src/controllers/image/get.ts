@@ -1,11 +1,11 @@
-import { Request, RequestHandler } from 'express';
+import { Request, RequestHandler, Response } from 'express';
 import { GetImagesResponse, ImageMetadata } from '../../models';
 import { getImageCRUDService } from '../../utils';
 import { IImageCRUDService } from '../../services';
 
 const maxAndDefaultPageLimit = 10;
 
-const get: RequestHandler = async (req: Request<{}, GetImagesResponse, {}>, res) => {
+const get: RequestHandler = async (req: Request<{}, GetImagesResponse, {}>, res: Response) => {
     const { limit, offset } = req.query;
 
     const pageLimit = limit ? 

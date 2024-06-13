@@ -2,12 +2,11 @@ import {
     FileInfo,
     storeFile,
     UploadcareSimpleAuthSchema,
-  } from '@uploadcare/rest-client';
+} from '@uploadcare/rest-client';
 import { base, BaseResponse } from '@uploadcare/upload-client'
 import { ImageClient } from './interface';
 import { ImageUploadResult } from '../../models';
   
-
 export class UploadCare implements ImageClient{
     private readonly _authSchema: UploadcareSimpleAuthSchema;
 
@@ -15,13 +14,9 @@ export class UploadCare implements ImageClient{
         this._authSchema = authSchema;
     }
 
-    async upload(file: File): Promise<ImageUploadResult> {
-        const fileData = await file.arrayBuffer();
-
-        const fileBuffer = Buffer.from(fileData);
-
+    async upload(imageBuffer: Buffer): Promise<ImageUploadResult> {
         const uploadResult: BaseResponse = await base(
-            fileBuffer,
+            imageBuffer,
             {
               publicKey: this._authSchema.publicKey,
               store: true

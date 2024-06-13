@@ -19,12 +19,16 @@ export class HTTPClient {
             headers?: Record<string, string>
         }
     ): Promise<TResult> {
-        let body: string | undefined;
+        let body: ReadableStream | undefined = undefined;
 
+        // if (
+        //     !['GET', 'DELETE'].includes(httpMethod) &&
+        //     options?.payload
+        // ) body = JSON.stringify(options.payload);
         if (
             !['GET', 'DELETE'].includes(httpMethod) &&
             options?.payload
-        ) body = JSON.stringify(options.payload);
+        ) body = options.payload as ReadableStream;
 
         // setTimeout(this._abortController.abort, this._requestTimeoutMS);
             
@@ -33,7 +37,7 @@ export class HTTPClient {
             {
                 method: httpMethod, 
                 headers: options?.headers ?? this.baseHeaders,
-                body: body,
+                body,
                 signal: this._abortController.signal
             },
         );

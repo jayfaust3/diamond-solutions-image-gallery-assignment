@@ -1,5 +1,4 @@
 import { GetImagesResponse, ImageMetadata, PostImageResponse } from '../models';
-import { HTTPClient } from './http';
 
 const imageApiUrl = '/image-api';
 
@@ -7,36 +6,35 @@ export const fetchImages = async (pageRequest: {
     limit: number
     offset?: number
 }): Promise<ImageMetadata[]> => {
-    const httpClinet = new HTTPClient();
-
     const { limit, offset } = pageRequest;
 
     let requestUrl = `${imageApiUrl}?limit=${limit}`;
 
-    if (offset) requestUrl += `offset=${offset}`
+    if (offset) requestUrl += `offset=${offset}`;
 
-    const response = await httpClinet.makeRequest<GetImagesResponse>(
-        'GET',
-        requestUrl
-    );
+    const response = await fetch(requestUrl, {
+        method: 'GET',
+    });
 
-    const { data } = response;
+    const responseJson = await response.json();
+
+    const { data } = responseJson as GetImagesResponse;
 
     return data;
 };
 
 export const postImage = async (imageFile: File): Promise<ImageMetadata> => {
-    const httpClinet = new HTTPClient()
+    const formData = new FormData();
+    formData.append('image', imageFile);
 
-    const response = await httpClinet.makeRequest<PostImageResponse>(
-        'POST',
-        imageApiUrl,
-        {
-            payload: imageFile
-        }
-    );
+    const response = await fetch(imageApiUrl, {
+        method: 'POST',
+        body: formData,
+    });
 
-    const { data } = response;
+    const responseJson = await response.json();
+
+    const { data } = responseJson as PostImageResponse;
 
     return data;
 };

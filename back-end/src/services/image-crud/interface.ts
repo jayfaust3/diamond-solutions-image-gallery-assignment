@@ -1,7 +1,7 @@
 import { ImageMetadata } from '../../models';
 
 export interface IImageCRUDService {
-    create(file: File): Promise<ImageMetadata>;
+    create(imageBuffer: Buffer): Promise<ImageMetadata>;
 
     getBatch(
         pageRequest: {

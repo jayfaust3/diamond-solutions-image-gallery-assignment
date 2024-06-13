@@ -18,9 +18,9 @@ const app = express();
 
 app
   .use(logger('dev'))
-  .use(express.json())
+  // .use(express.json())
   .use(express.urlencoded({ extended: false }))
   .use('/api/images', imagesRouter)
-  .use(express.json({limit: '25mb'}))
-  .use(express.urlencoded({limit: '25mb', extended: true}))
+  // .use(express.json({limit: '25mb'}))
+  // .use(express.urlencoded({limit: '25mb', extended: true}))
   .listen(appPort);

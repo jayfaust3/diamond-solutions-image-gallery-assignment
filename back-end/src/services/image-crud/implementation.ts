@@ -14,8 +14,8 @@ export class ImageCRUDService implements IImageCRUDService {
         this._imageMetadataClient = imageMetadataClient;
     }
 
-    async create(file: File): Promise<ImageMetadata> {
-        const uploadResult: ImageUploadResult = await this._imageClient.upload(file);
+    async create(imageBuffer: Buffer): Promise<ImageMetadata> {
+        const uploadResult: ImageUploadResult = await this._imageClient.upload(imageBuffer);
 
         const insertRequest: ImageMetadataInsertRequest = {
             ...uploadResult
