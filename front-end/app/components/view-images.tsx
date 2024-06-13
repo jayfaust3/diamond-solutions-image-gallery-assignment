@@ -133,17 +133,8 @@ export default function ViewImages() {
         </div>
       ) : (
         <div className='content-wrapper'>
-          <div className='right-justify'>
+          <div className='centered-wrapper'>
             <h1>Image Gallery</h1>
-          </div>
-          <div className='content-wrapper'>
-            <Dropzone
-              onChange={handleUploadComplete}
-              maxFiles={1}
-              value={uploadedImages}
-              accept={'image/jpeg, image/jpg, image/png'}
-              behaviour={'replace'}
-            />
           </div>
           <div className='content-wrapper'>
             <PhotoAlbum layout='masonry' photos={images} onClick={handleImageClicked} />
@@ -156,6 +147,15 @@ export default function ViewImages() {
             {hasNext && !loading && (
               <button onClick={handleNextClicked}>Next</button>
             )}
+          </div>
+          <div className='content-wrapper'>
+            <Dropzone
+              onChange={handleUploadComplete}
+              maxFiles={1}
+              value={uploadedImages}
+              accept={'image/jpeg, image/jpg, image/png'}
+              behaviour={'replace'}
+            />
           </div>
         </div>
       )}
