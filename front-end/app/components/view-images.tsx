@@ -17,8 +17,6 @@ export default function ViewImages() {
   const [images, setImages] = useState<IdentifyablePhoto[]>([]);
   const [uploadedImages, setUploadedImages] = useState<ExtFile[]>([]);
   const [pageNumber, setPageNumber] = useState(1);
-  const [hasPrevious, setHasPrevious] = useState(false);
-  const [hasNext, setHasNext] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [targetImage, setTargetImage] = useState<IdentifyablePhoto | null>(null);
 
@@ -58,14 +56,9 @@ export default function ViewImages() {
   }, [setLoading, setImages, fetchImages, pageNumber]);
 
   useEffect(() => {
-    const imageCount = images.length;
-
-    if (!imageCount) {
+    if (!images.length) {
       setPageNumber((previousPage) => Math.max(previousPage - 1, 0));
-      setHasNext(false);
     }
-
-    setHasNext(images.length === pageLimit);
   }, [images]);
 
   useEffect(() => {
@@ -73,10 +66,8 @@ export default function ViewImages() {
   }, [loadImages]);
 
   useEffect(() => {
-    setHasPrevious(pageNumber > 1);
-
     loadImages();
-  }, [pageNumber, setHasPrevious, loadImages]);
+  }, [pageNumber, loadImages]);
 
   useEffect(() => {
     const handleUploadChange = async () => {
@@ -120,17 +111,15 @@ export default function ViewImages() {
   }, []);
 
   const handlePreviousClicked = useCallback(() => {
-    if (hasPrevious) {
+    if (pageNumber > 1) {
       setPageNumber((previousNumber) => previousNumber - 1);
     }
     
-  }, [hasPrevious, setPageNumber]);
+  }, [pageNumber, setPageNumber]);
 
   const handleNextClicked = useCallback(() => {
-    if (hasNext) {
-      setPageNumber((previousNumber) => previousNumber + 1);
-    }
-  }, [hasNext, setPageNumber]);
+    setPageNumber((previousNumber) => previousNumber + 1);
+  }, [setPageNumber]);
 
   const imageDeleteCallback = useCallback(async (imageId: string) => {
     await deleteImageFromApi(imageId);
