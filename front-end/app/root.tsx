@@ -23,13 +23,12 @@ export default function Root() {
       <body>
         <main>
           <ViewImages />
-
-          <footer>
-            <div className='right-justify content-wrapper'>
-              <p>© Diamond Solutions</p>
-            </div>
-          </footer>
         </main>
+        <footer>
+          <div className='content-wrapper'>
+            <p>© Diamond Solutions</p>
+          </div>
+        </footer>
         <ScrollRestoration />
         <Scripts />
       </body>

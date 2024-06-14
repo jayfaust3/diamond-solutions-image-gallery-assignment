@@ -63,6 +63,20 @@ body {
   width: 100%;
 }
 
+footer {
+  padding: 20px;
+  background: cornflowerblue;
+  color: white;
+  text-align: right;
+  margin-top: auto; /* This pushes the footer to the bottom */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%; /* Ensure footer spans full width */
+  height: 60px; /* Set a fixed height for the footer */
+  z-index: 1000;
+}
+
 .delete-button {
   color: red;
 }
@@ -72,7 +86,7 @@ body {
 }
 
 .centered-wrapper {
-  display: flex;
+  display: block;
   justify-content: center;
   align-items: center;
   height: 100%;
@@ -81,6 +95,7 @@ body {
 
 .content-wrapper {
   padding: 6px;
+  margin-bottom: 20px;
 }
 
 .even-spacing {

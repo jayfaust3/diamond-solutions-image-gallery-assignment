@@ -22,7 +22,7 @@ export default function ViewImage(props: {
   }, [closeCallback, deleteCallback, imageData]);
 
   return (
-    <div className='content-wrapper'>
+    <div className='content-wrapper centered-wrapper'>
         <div className='content-wrapper'>
             <PhotoAlbum layout="rows" photos={[imageData]}/>
         </div>

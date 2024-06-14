@@ -47,23 +47,36 @@ export default function ViewImages() {
   const loadImages = useCallback(async () => {
     setLoading(true);
 
-    const newImages = await fetchImages({
+    const newImages: ImageMetadata[] = await fetchImages({
       limit: pageLimit,
       offset: (pageNumber - 1) * pageLimit
     });
 
     setImages(newImages.map(mapFileApiModelToFileViewmodel));
 
-    setHasPrevious(pageNumber > 1);
-
-    setHasNext(newImages.length === pageLimit);
-
     setLoading(false);
   }, [setLoading, setImages, fetchImages, pageNumber]);
 
   useEffect(() => {
+    const imageCount = images.length;
+
+    if (!imageCount) {
+      setPageNumber((previousPage) => Math.max(previousPage - 1, 0));
+      setHasNext(false);
+    }
+
+    setHasNext(images.length === pageLimit);
+  }, [images]);
+
+  useEffect(() => {
     loadImages();
   }, [loadImages]);
+
+  useEffect(() => {
+    setHasPrevious(pageNumber > 1);
+
+    loadImages();
+  }, [pageNumber, setHasPrevious, loadImages]);
 
   useEffect(() => {
     const handleUploadChange = async () => {
@@ -93,7 +106,7 @@ export default function ViewImages() {
     };
     
     handleUploadChange();
-  }, [uploadedImages]);
+  }, [uploadedImages, loadImages]);
 
   const handleUploadComplete = useCallback((newlyUploadedImages: ExtFile[]) => {
     const [newlyUploadedImage] = newlyUploadedImages;
@@ -106,18 +119,22 @@ export default function ViewImages() {
     setModalOpen(true);
   }, []);
 
-  const handlePreviousClicked = useCallback(async () => {
-    if (hasPrevious) setPageNumber(pageNumber - 1);
+  const handlePreviousClicked = useCallback(() => {
+    if (hasPrevious) {
+      setPageNumber((previousNumber) => previousNumber - 1);
+    }
+    
   }, [hasPrevious, setPageNumber]);
 
-  const handleNextClicked = useCallback(async () => {
-    if (hasNext) setPageNumber(pageNumber + 1);
+  const handleNextClicked = useCallback(() => {
+    if (hasNext) {
+      setPageNumber((previousNumber) => previousNumber + 1);
+    }
   }, [hasNext, setPageNumber]);
 
   const imageDeleteCallback = useCallback(async (imageId: string) => {
     await deleteImageFromApi(imageId);
     setPageNumber(1);
-    loadImages();
   }, []);
 
   const modalCloseCallback = useCallback(() => {
@@ -127,9 +144,18 @@ export default function ViewImages() {
 
   return (
     <div className='content-wrapper'>
+      {loading && (
+        <div className='right-justify'>
+          <p>Loading...</p>
+        </div>
+      )}
       {modalOpen && targetImage ? (
         <div className='content-wrapper centered-wrapper'>
-          <ViewImage image={targetImage} closeCallback={modalCloseCallback} deleteCallback={imageDeleteCallback} />
+          <ViewImage
+            image={targetImage}
+            closeCallback={modalCloseCallback}
+            deleteCallback={imageDeleteCallback}
+          />
         </div>
       ) : (
         <div className='content-wrapper'>
@@ -137,14 +163,17 @@ export default function ViewImages() {
             <h1>Image Gallery</h1>
           </div>
           <div className='content-wrapper'>
-            <PhotoAlbum layout='masonry' photos={images} onClick={handleImageClicked} />
+            <PhotoAlbum
+              layout='masonry'
+              photos={images}
+              onClick={handleImageClicked} 
+            />
           </div>
           <div className='right-justify content-wrapper even-spacing'>
-            {loading && <p>Loading...</p>}
-            {hasPrevious && !loading && (
+            {pageNumber > 1 && !loading && (
               <button onClick={handlePreviousClicked}>Previous</button>
             )}
-            {hasNext && !loading && (
+            {images.length === pageLimit && !loading && (
               <button onClick={handleNextClicked}>Next</button>
             )}
           </div>
@@ -155,6 +184,7 @@ export default function ViewImages() {
               value={uploadedImages}
               accept={'image/jpeg, image/jpg, image/png'}
               behaviour={'replace'}
+              label='Upload Image'
             />
           </div>
         </div>
