@@ -6,6 +6,7 @@ import { IImageCRUDService } from '../../services';
 const maxAndDefaultPageLimit = 10;
 
 const get: RequestHandler = async (req: Request<{}, GetImagesResponse, {}>, res: Response) => {
+    throw new Error('BOOM');
     const { limit, offset } = req.query;
 
     const pageLimit = limit ? 
