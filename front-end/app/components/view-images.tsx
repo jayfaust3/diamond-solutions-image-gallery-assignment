@@ -56,16 +56,6 @@ export default function ViewImages() {
   }, [setLoading, setImages, fetchImages, pageNumber]);
 
   useEffect(() => {
-    if (!images.length) {
-      setPageNumber((previousPage) => Math.max(previousPage - 1, 0));
-    }
-  }, [images]);
-
-  useEffect(() => {
-    loadImages();
-  }, [loadImages]);
-
-  useEffect(() => {
     loadImages();
   }, [pageNumber, loadImages]);
 
