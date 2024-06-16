@@ -12,7 +12,7 @@ const getImageMetadataClient = (): ImageMetadataClient => {
 export const getImageCRUDService = (): IImageCRUDService => {
     const imageClient: ImageClient = getImageClient();
 
-    const imageMetadataClient = getImageMetadataClient();
+    const imageMetadataClient: ImageMetadataClient = getImageMetadataClient();
 
     return new ImageCRUDService(
         imageClient,
