@@ -14,7 +14,7 @@ const get: RequestHandler = async (req: Request<{}, GetImagesResponse, {}>, res:
 
     const pageOffset = offset ? Math.max(Number(offset), 0) : undefined;
 
-    const service: IImageCRUDService = await getImageCRUDService();
+    const service: IImageCRUDService = getImageCRUDService();
 
     const results: ImageMetadata[] = await service.getBatch({
         limit: pageLimit,

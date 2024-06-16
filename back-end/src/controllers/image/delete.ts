@@ -5,7 +5,7 @@ import { IImageCRUDService } from '../../services';
 const deleteImage: RequestHandler = async (req: Request, res: Response) => {
     const imageMetadataId = req.params.id;
 
-    const service: IImageCRUDService = await getImageCRUDService();
+    const service: IImageCRUDService = getImageCRUDService();
 
     await service.delete(imageMetadataId);
 

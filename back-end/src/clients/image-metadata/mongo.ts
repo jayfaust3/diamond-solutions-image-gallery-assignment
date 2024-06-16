@@ -1,20 +1,21 @@
 import { Collection, ObjectId, WithId } from 'mongodb';
 import { ImageMetadataClient } from './interface';
 import { ImageMetadata, ImageMetadataDbModel, ImageMetadataInsertRequest } from '../../models';
+import { getMongoDbCollectionClient } from '../../utils';
 
 export class MongoDb implements ImageMetadataClient {
-    private readonly _imageCollectionClient: Collection<ImageMetadataDbModel>;
+    private _imageCollectionClient: Collection<ImageMetadataDbModel> | null = null;;
 
-    constructor(imageCollectionClient: Collection<ImageMetadataInsertRequest>) {
-        this._imageCollectionClient = imageCollectionClient;
-    }
+    constructor() {}
 
     async getSingle(imageMetadataId: string): Promise<ImageMetadata | null> {
+        const collection =  await this.getImageCollectionClient();
+
         let imageMetadata: ImageMetadata | null = null;
 
         const objectId = new ObjectId(imageMetadataId);
 
-        const result = await this._imageCollectionClient.findOne({ _id: objectId });
+        const result = await collection.findOne({ _id: objectId });
 
         if (result) imageMetadata = MongoDb.mapFindResultModelToAppModel(result);
 
@@ -22,7 +23,9 @@ export class MongoDb implements ImageMetadataClient {
     }
 
     async get (limit: number, offset?: number): Promise<ImageMetadata[]> {
-        const cursor = this._imageCollectionClient
+        const collection =  await this.getImageCollectionClient();
+
+        const cursor = collection
             .find()
             .sort('imageUploadDate', 'desc')
             .limit(limit)
@@ -34,9 +37,11 @@ export class MongoDb implements ImageMetadataClient {
     }
 
     async create (imageMetadataToCreate: ImageMetadataInsertRequest): Promise<ImageMetadata> {
+        const collection =  await this.getImageCollectionClient();
+
         const dbModel: ImageMetadataDbModel = MongoDb.mapInsertRequestModelToDbModel(imageMetadataToCreate);
 
-        const result = await this._imageCollectionClient.insertOne(dbModel);
+        const result = await collection.insertOne(dbModel);
 
         const id = result.insertedId.toString();;
 
@@ -47,9 +52,28 @@ export class MongoDb implements ImageMetadataClient {
     }
 
     async delete(id: string): Promise<void> {
+        const collection =  await this.getImageCollectionClient();
+
         const objectId = new ObjectId(id);
 
-        await this._imageCollectionClient.deleteOne({ _id: objectId });
+        await collection.deleteOne({ _id: objectId });
+    }
+
+    private async getImageCollectionClient(): Promise<Collection<ImageMetadataDbModel>> {
+        if (!this._imageCollectionClient) {
+            const {
+                MONGODB_COLLECTION_NAME: imageMetadataCollectionName
+            } = process.env;
+        
+            if (!imageMetadataCollectionName) throw new Error('Missing MongoDb configuration');
+        
+            const imageMetadataCollectionClient: Collection<ImageMetadataDbModel> =
+                await getMongoDbCollectionClient<ImageMetadataDbModel>(imageMetadataCollectionName);
+
+            this._imageCollectionClient = imageMetadataCollectionClient; 
+        }
+
+        return this._imageCollectionClient;
     }
 
     private static mapInsertRequestModelToDbModel(requestModel: ImageMetadataInsertRequest): ImageMetadataDbModel {

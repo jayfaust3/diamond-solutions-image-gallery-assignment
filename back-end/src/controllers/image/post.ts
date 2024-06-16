@@ -14,7 +14,7 @@ const post: RequestHandler = async (req: PostImageRequest, res: Response) => {
 
     const imageBuffer = imageFile.buffer;
 
-    const service: IImageCRUDService = await getImageCRUDService();
+    const service: IImageCRUDService = getImageCRUDService();
 
     const createResult: ImageMetadata = await service.create(imageBuffer);
 
