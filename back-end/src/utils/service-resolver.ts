@@ -1,12 +1,8 @@
-import { UploadcareSimpleAuthSchema } from '@uploadcare/rest-client';
 import { ImageClient, ImageMetadataClient, MongoDb, UploadCare } from '../clients';
 import { IImageCRUDService, ImageCRUDService } from '../services';
-import { getUploadcareSimpleAuthSchema } from './upload-care';
 
-const getImageClient = (): ImageClient => {
-    const authSchema: UploadcareSimpleAuthSchema = getUploadcareSimpleAuthSchema();
-    
-    return new UploadCare(authSchema);
+const getImageClient = (): ImageClient => {    
+    return new UploadCare();
 };
 
 const getImageMetadataClient = (): ImageMetadataClient => {

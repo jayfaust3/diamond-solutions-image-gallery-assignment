@@ -7,19 +7,19 @@ import {
 import { base, BaseResponse } from '@uploadcare/upload-client'
 import { ImageClient } from './interface';
 import { ImageUploadResult } from '../../models';
+import { getUploadcareSimpleAuthSchema } from '../../utils';
   
 export class UploadCare implements ImageClient{
-    private readonly _authSchema: UploadcareSimpleAuthSchema;
 
-    constructor(authSchema: UploadcareSimpleAuthSchema) {
-        this._authSchema = authSchema;
-    }
+    constructor() {}
 
     async upload(imageBuffer: Buffer): Promise<ImageUploadResult> {
+        const authSchema: UploadcareSimpleAuthSchema = getUploadcareSimpleAuthSchema();
+        
         const uploadResult: BaseResponse = await base(
             imageBuffer,
             {
-              publicKey: this._authSchema.publicKey,
+              publicKey: authSchema.publicKey,
               store: true
             }
         );
@@ -31,7 +31,7 @@ export class UploadCare implements ImageClient{
               uuid: imageId,
             },
             { 
-                authSchema: this._authSchema 
+                authSchema: authSchema 
             }
         );
 
@@ -47,12 +47,14 @@ export class UploadCare implements ImageClient{
     }
 
     async delete(imageId: string): Promise<void> {
+        const authSchema: UploadcareSimpleAuthSchema = getUploadcareSimpleAuthSchema();
+
         await deleteFile(
             { 
                 uuid: imageId
             },
             {
-                authSchema: this._authSchema 
+                authSchema 
             }
         );
     }
