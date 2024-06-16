@@ -3,7 +3,7 @@ import { ImageMetadata, PostImageRequest, PostImageResponse } from '../../models
 import { getImageCRUDService } from '../../utils';
 import { IImageCRUDService } from '../../services';
 
-const post: RequestHandler = async (req: PostImageRequest, res: Response) => {    
+const postImage: RequestHandler = async (req: PostImageRequest, res: Response) => {    
     const imageFile = req.file;
 
     if (!imageFile) {
@@ -25,4 +25,4 @@ const post: RequestHandler = async (req: PostImageRequest, res: Response) => {
     res.status(201).send(response);
 };
 
-export default post;
+export default postImage;
